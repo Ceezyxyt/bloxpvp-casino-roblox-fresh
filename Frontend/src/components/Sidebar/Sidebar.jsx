@@ -43,14 +43,14 @@ export default function Sidebar () {
                 </Link>
             </div>
             <div className="SocialLinks">
-                <a className="Link Discord" href='https://discord.gg/bloxpvp' target='_blank'>
+                <a className="Link Discord" href='https://discord.gg/bloxsurge' target='_blank'>
                     <img src={discord} alt="Discord Logo" />
                     <p>DISCORD</p>
                 </a>
-                <div className="Link Support">
+                <a className="Link Support" href="https://discord.gg/bloxsurge" target="_blank">
                     <img src={support} alt="Support Logo" />
                     <p>SUPPORT</p>
-                </div>
+                </a>
             </div>
         </div>
     )
