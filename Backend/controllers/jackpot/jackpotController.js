@@ -10,6 +10,13 @@ const crypto = require("crypto");
 const { add } = require("date-fns");
 const { XP_CONSTANT } = require("../../config");
 const { emitEvent } = require("../../utils/events");
+const {
+  getTaxOwner,
+  selectTaxItems,
+  recordTaxEvent,
+} = require("../../services/taxService");
+const { updateStreaks, announceStreaks } = require("../../services/streakService");
+const { sendDiscordLog } = require("../../services/discordWebhookService");
 
 
 exports.join_jackpot = [
@@ -55,7 +62,7 @@ exports.join_jackpot = [
       }
 
       let actualItems = [];
-      for (chosenItem of req.body.chosenItems) {
+      for (const chosenItem of req.body.chosenItems) {
         let exists = await InventoryItem.findOne({
           _id: chosenItem._id,
           locked: false,
@@ -98,6 +105,7 @@ exports.join_jackpot = [
       const state = recentJackpot.state == "Created" ? "Waiting" : "Started";
 
       if (chosenSum > max) {
+        await session.abortTransaction();
         return res.status(400).send("Your bet amount exceeds the limit");
       }
 
@@ -143,149 +151,38 @@ exports.join_jackpot = [
 
       let RoleToGive;
 
-      if (playerInfo.rank == "User") {
-        RoleToGive =
-          XP_CONSTANT * Math.sqrt(playerInfo.wagered + chosenSum.value) > 40
-            ? "Whale"
-            : "User";
-      } else {
-        RoleToGive = playerInfo.rank;
-      }
+      RoleToGive = getProgressionRank(playerInfo, chosenSum);
 
       await Account.updateOne(
         { _id: req.user.id },
         {
           $inc: { wagered: chosenSum, totalBets: 1 },
-          level: XP_CONSTANT * Math.sqrt(playerInfo.wagered + chosenSum),
-          rank: RoleToGive,
+          $set: {
+            level: XP_CONSTANT * Math.sqrt((playerInfo.wagered || 0) + (chosenSum || 0)) || 0,
+            rank: RoleToGive,
+          },
         },
         { session: session }
       );
 
       await session.commitTransaction();
       res.sendStatus(200);
-
-      const jackpotData = await getJackpot();
-      emitEvent("JACKPOT_UPDATE", jackpotData);
-
-      if (recentJackpot.state == "Waiting") {
-        setTimeout(async () => {
-          close_jackpot();
-          play_jackpot();
-          setTimeout(async () => {
-            await Jackpot.findByIdAndUpdate(recentJackpot._id, {
-              inactive: true,
-            });
-            create_jackpot();
-          }, 18000);
-        }, jackpotData.gameData.endsAt.getTime() - new Date().getTime());
-      }
+      void sendDiscordLog("jackpot", "Jackpot entry added", [
+        { name: "Game", value: String(recentJackpot._id), inline: true },
+        { name: "Player", value: playerInfo.username, inline: true },
+        { name: "Entry value", value: String(chosenSum), inline: true },
+      ]);
     } catch (error) {
-      await session.abortTransaction();
-      console.error("Error: ", error);
-      res.sendStatus(500);
+      if (session.inTransaction()) await session.abortTransaction();
+      console.error("Jackpot join failed:", error);
+      return res.status(500).send("Unable to join jackpot");
     } finally {
       session.endSession();
     }
   }),
 ];
 
-const play_jackpot = asyncHandler(async (req, res, next) => {
-  const activeJackpot = await Jackpot.findOne({ inactive: false });
-  const jackpotEntries = await JackpotEntry.find({
-    jackpotGame: activeJackpot._id,
-  }).populate({
-    path: "items",
-    populate: [
-      {
-        path: "item",
-        model: Item,
-      },
-    ],
-  });
-
-  const totalAmount = jackpotEntries.reduce(
-    (total, jackpotEntry) => total + jackpotEntry.value,
-    0
-  );
-  const blockInfo = await commitToFutureBlock();
-  const clientSeed = blockInfo.head_block_id.toString();
-  const randomNumber = generateGameResult(
-    clientSeed,
-    activeJackpot.serverSeed,
-    totalAmount
-  );
-
-  let cumulativeWeight = 0;
-  let winner;
-
-  for (const Entry of jackpotEntries) {
-    cumulativeWeight += Entry.value;
-    if (randomNumber <= cumulativeWeight) {
-      winner = Entry.joiner;
-      break;
-    }
-  }
-
-  await Jackpot.findOneAndUpdate(
-    { _id: activeJackpot._id },
-    {
-      winner: winner,
-      clientSeed: clientSeed,
-      EOSBlock: blockInfo.head_block_id,
-      result: randomNumber,
-    }
-  );
-
-  const taxItems = [];
-  let payoutItems = [];
-  let allItems = [];
-  for (Entry of jackpotEntries) {
-    for (EntryItem of Entry.items) {
-      allItems.push(EntryItem);
-    }
-  }
-
-  let toTax = activeJackpot.value / 10;
-
-  for (let singleItem of allItems) {
-    if (Number(singleItem.item.item_value) < toTax) {
-      toTax -= Number(singleItem.item.item_value);
-      taxItems.push(singleItem);
-    } else {
-      payoutItems.push(singleItem);
-    }
-  }
-  for (let item of payoutItems) {
-    await InventoryItem.updateOne(
-      { _id: item._id },
-      { locked: false, owner: winner }
-    );
-  }
-
-  await Account.updateOne(
-    { _id: winner },
-    {
-      $inc: { gameWins: 1 },
-    }
-  );
-
-  const taxer = await Account.findOne({ robloxId: "5329316694" });
-  for (let taxItem of taxItems) {
-    await InventoryItem.updateOne(
-      { _id: taxItem._id },
-      {
-        owner: taxer._id,
-        locked: false,
-      }
-    );
-  }
-
-  const jackpotData = await getJackpot();
-  emitEvent("JACKPOT_UPDATE", jackpotData);
-});
-
-const close_jackpot = asyncHandler(async (req, res, next) => {
+const play_jackpot = async () => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -295,77 +192,204 @@ const close_jackpot = asyncHandler(async (req, res, next) => {
     })
       .session(session)
       .exec();
+    if (!activeJackpot) {
+      await session.abortTransaction();
+      return;
+    }
 
-    await Jackpot.updateOne(
-      { _id: activeJackpot._id },
-      {
-        state: "Ended",
-      },
-      { session: session }
+    const jackpotEntries = await JackpotEntry.find({
+      jackpotGame: activeJackpot._id,
+    })
+      .session(session)
+      .populate({
+        path: "items",
+        populate: [
+          {
+            path: "item",
+            model: Item,
+          },
+        ],
+      });
+    const totalAmount = jackpotEntries.reduce(
+      (total, jackpotEntry) => total + Number(jackpotEntry.value || 0),
+      0
     );
 
+    if (totalAmount <= 0 || jackpotEntries.length === 0) {
+      await Jackpot.updateOne(
+        { _id: activeJackpot._id },
+        { result: 0, clientSeed: null, state: "Ended" },
+        { session }
+      );
+      await session.commitTransaction();
+      return;
+    }
+
+    const blockInfo = await commitToFutureBlock();
+    const clientSeed = blockInfo.head_block_id.toString();
+    const randomNumber = generateGameResult(
+      clientSeed,
+      activeJackpot.serverSeed,
+      totalAmount
+    );
+
+    let cumulativeWeight = 0;
+    let winner;
+    for (const entry of jackpotEntries) {
+      cumulativeWeight += Number(entry.value || 0);
+      if (randomNumber < cumulativeWeight) {
+        winner = entry.joiner;
+        break;
+      }
+    }
+    if (!winner) throw new Error("Jackpot winner could not be selected");
+
+    const allItems = jackpotEntries.flatMap((entry) => entry.items || []);
+    const taxSelection = selectTaxItems(allItems, totalAmount);
+    const taxer = await getTaxOwner(session);
+    const taxOwner = taxer?._id || winner;
+
+    await Jackpot.findOneAndUpdate(
+      { _id: activeJackpot._id },
+      {
+        winner,
+        clientSeed,
+        EOSBlock: blockInfo.head_block_id,
+        result: randomNumber,
+      },
+      { session }
+    );
+
+    for (const item of taxSelection.payoutItems) {
+      await InventoryItem.updateOne(
+        { _id: item._id },
+        { locked: false, owner: winner },
+        { session }
+      );
+    }
+    await Account.updateOne(
+      { _id: winner },
+      { $inc: { gameWins: 1 } },
+      { session }
+    );
+    const loserIds = [
+      ...new Set(
+        jackpotEntries
+          .map((entry) => String(entry.joiner))
+          .filter((id) => id !== String(winner))
+      ),
+    ];
+    await updateStreaks({
+      winnerIds: [winner],
+      loserIds,
+      session,
+    });
+    for (const taxItem of taxSelection.taxItems) {
+      await InventoryItem.updateOne(
+        { _id: taxItem._id },
+        { owner: taxOwner, locked: false },
+        { session }
+      );
+    }
+    await recordTaxEvent({
+      game: "jackpot",
+      gameId: activeJackpot._id,
+      grossValue: totalAmount,
+      targetValue: taxSelection.targetValue,
+      collectedValue: taxSelection.collectedValue,
+      taxItems: taxSelection.taxItems,
+      session,
+    });
+
     await session.commitTransaction();
+    void sendDiscordLog("jackpot", "Jackpot settled", [
+      { name: "Game", value: String(activeJackpot._id), inline: true },
+      { name: "Winner account", value: String(winner), inline: true },
+      { name: "Players", value: String(jackpotEntries.length), inline: true },
+      { name: "Gross value", value: String(totalAmount), inline: true },
+      { name: "Tax collected", value: String(taxSelection.collectedValue), inline: true },
+    ]);
+    void sendDiscordLog("tax", "Jackpot tax collected", [
+      { name: "Game", value: String(activeJackpot._id), inline: true },
+      { name: "Gross value", value: String(totalAmount), inline: true },
+      { name: "Target value", value: String(taxSelection.targetValue), inline: true },
+      { name: "Collected value", value: String(taxSelection.collectedValue), inline: true },
+      { name: "Items collected", value: String(taxSelection.taxItems.length), inline: true },
+    ]);
+    await announceStreaks({ winnerIds: [winner], loserIds });
   } catch (error) {
-    await session.abortTransaction();
+    if (session.inTransaction()) await session.abortTransaction();
     console.error("Error: ", error);
   } finally {
     session.endSession();
   }
-});
 
-const create_jackpot = asyncHandler(async (req, res, next) => {
+  const jackpotData = await getJackpot();
+  emitEvent("JACKPOT_UPDATE", jackpotData);
+};
+
+const close_jackpot = async () => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
 
-    const latestJP = await Jackpot.findOne({ state: { $ne: "Ended" } })
+    const activeJackpot = await Jackpot.findOne({
+      inactive: false,
+    })
       .session(session)
       .exec();
-    if (latestJP) {
+    if (!activeJackpot) {
       await session.abortTransaction();
-      return console.log("Jackpot exists");
+      return;
     }
 
-    let serverSeed = generateRandomSeed();
-    const hashedServerSeed = crypto
-      .createHash("sha256")
-      .update(serverSeed)
-      .digest("hex");
-    const newJackpot = new Jackpot({
-      value: 0,
-      requirements: {
-        max: 0,
-      },
-      winner: null,
-      serverSeed: serverSeed,
-      hashedServerSeed: hashedServerSeed,
-      clientSeed: null,
-      EOSBlock: null,
-      endsAt: null,
-      result: null,
-      inactive: false,
-      state: "Created",
-    });
-    await newJackpot.save({ session: session });
-    console.log("Created new jackpot");
-
+    await Jackpot.updateOne(
+      { _id: activeJackpot._id },
+      { state: "Ended" },
+      { session }
+    );
     await session.commitTransaction();
-
-    const jackpotData = await getJackpot();
-    emitEvent("JACKPOT_UPDATE", jackpotData);
   } catch (error) {
-    await session.abortTransaction();
+    if (session.inTransaction()) await session.abortTransaction();
     console.error("Error: ", error);
   } finally {
     session.endSession();
   }
+};
+
+const create_jackpot = asyncHandler(async () => {
+  const latestJP = await Jackpot.findOne({ state: { $ne: "Ended" } }).sort({
+    $natural: -1,
+  });
+  if (latestJP) return latestJP;
+
+  const serverSeed = generateRandomSeed();
+  const hashedServerSeed = crypto
+    .createHash("sha256")
+    .update(serverSeed)
+    .digest("hex");
+  const newJackpot = await Jackpot.create({
+    value: 0,
+    requirements: { max: 0 },
+    winner: null,
+    serverSeed,
+    hashedServerSeed,
+    clientSeed: null,
+    EOSBlock: null,
+    endsAt: null,
+    result: null,
+    inactive: false,
+    state: "Created",
+  });
+  console.log("Created new jackpot");
+
+  const jackpotData = await getJackpot();
+  emitEvent("JACKPOT_UPDATE", jackpotData);
+  return newJackpot;
 });
 
 exports.get_jackpot = asyncHandler(async (req, res, next) => {
-  let activeJackpot = await Jackpot.find({}, { winner: 0 }).sort({
-    $natural: -1,
-  });
-  activeJackpot = activeJackpot[0];
+  const activeJackpot = await ensureActiveJackpot();
   const jackpotEntries = await JackpotEntry.find(
     {
       jackpotGame: activeJackpot._id,
@@ -380,8 +404,10 @@ exports.get_jackpot = asyncHandler(async (req, res, next) => {
       },
     ],
   });
+  const gameData = activeJackpot.toObject();
+  if (gameData.result == null) delete gameData.serverSeed;
   return res.status(200).send({
-    gameData: activeJackpot,
+    gameData,
     entries: jackpotEntries,
   });
 });
@@ -397,18 +423,35 @@ async function commitToFutureBlock() {
 
 function generateGameResult(clientSeed, serverSeed, totalAmount) {
   const combinedSeed = `${clientSeed}${serverSeed}`;
+  const total = Math.floor(Number(totalAmount));
+  if (total <= 0) return 0;
 
-  const hash = crypto.createHash("sha256").update(combinedSeed).digest("hex");
+  // Rejection sampling avoids modulo bias when the pot value is not a
+  // divisor of the hash space.
+  const range = 2n ** 256n;
+  const limit = range - (range % BigInt(total));
+  let nonce = 0;
+  while (true) {
+    const hash = crypto
+      .createHash("sha256")
+      .update(`${combinedSeed}:${nonce}`)
+      .digest("hex");
+    const randomValue = BigInt(`0x${hash}`);
+    if (randomValue < limit) return Number(randomValue % BigInt(total));
+    nonce += 1;
+  }
+}
 
-  const randomNumber = parseInt(hash.slice(0, 8), 16) % (totalAmount + 1);
-  return randomNumber;
+function getProgressionRank(account, wageredAmount) {
+  const rank = String(account.rank || "USER").toUpperCase();
+  if (["OWNER", "ADMIN", "MOD"].includes(rank)) return rank;
+  return XP_CONSTANT * Math.sqrt((account.wagered || 0) + (wageredAmount || 0)) > 40
+    ? "WHALE"
+    : "USER";
 }
 
 async function getJackpot() {
-  let activeJackpot = await Jackpot.find({}, { winner: 0 }).sort({
-    $natural: -1,
-  });
-  activeJackpot = activeJackpot[0];
+  const activeJackpot = await ensureActiveJackpot();
   const jackpotEntries = await JackpotEntry.find(
     {
       jackpotGame: activeJackpot._id,
@@ -424,36 +467,48 @@ async function getJackpot() {
     ],
   });
   return {
-    gameData: activeJackpot,
+    gameData: serializePublicJackpot(activeJackpot),
     entries: jackpotEntries,
   };
+}
+
+function serializePublicJackpot(jackpot) {
+  const gameData = jackpot.toObject ? jackpot.toObject() : { ...jackpot };
+  if (gameData.result == null) delete gameData.serverSeed;
+  return gameData;
+}
+
+async function ensureActiveJackpot() {
+  const activeJackpot = await Jackpot.findOne({ inactive: false }).sort({
+    $natural: -1,
+  });
+  if (activeJackpot) return activeJackpot;
+  return create_jackpot();
 }
 
 async function startupCheckUnfinished() {
   let currentJackpot = await Jackpot.find({}).sort({ $natural: -1 });
   currentJackpot = currentJackpot[0];
 
+  if (!currentJackpot) return create_jackpot();
   if (currentJackpot.state != "Ended") {
-    if (currentJackpot.endsAt > new Date()) {
-      close_jackpot();
-      play_jackpot();
+    const finishJackpot = async () => {
+      await close_jackpot();
+      await play_jackpot();
       setTimeout(async () => {
         await Jackpot.findByIdAndUpdate(currentJackpot._id, {
           inactive: true,
         });
         create_jackpot();
       }, 18000);
+    };
+    const remaining = currentJackpot.endsAt
+      ? currentJackpot.endsAt.getTime() - Date.now()
+      : 0;
+    if (remaining > 0) {
+      setTimeout(finishJackpot, remaining);
     } else if (currentJackpot.state == "Started") {
-      setTimeout(async () => {
-        close_jackpot();
-        play_jackpot();
-        setTimeout(async () => {
-          await Jackpot.findByIdAndUpdate(currentJackpot._id, {
-            inactive: true,
-          });
-          create_jackpot();
-        }, 18000);
-      }, currentJackpot.endsAt.getTime() - new Date().getTime());
+      await finishJackpot();
     }
   } else if (
     currentJackpot.state == "Ended" &&
@@ -474,4 +529,9 @@ async function startupCheckUnfinished() {
   }
 }
 
-startupCheckUnfinished(); // Check for broken jackpots on startup
+// Delay startup check to let MongoDB replica set settle
+setTimeout(() => {
+  startupCheckUnfinished().catch((err) =>
+    console.error("Jackpot startup check failed (non-fatal):", err.message)
+  );
+}, 3000);
