@@ -1,4 +1,4 @@
-import { logoGradient } from "../../assets/imageExport";
+import { bloxSurgeMark } from "../../assets/imageExport";
 import PropTypes from "prop-types";
 import "./TOS.css";
 import { m } from "framer-motion";
@@ -20,7 +20,7 @@ export default function TOS({ closeModal }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="Header">
-          <img src={logoGradient} alt="BLOXPVP Logo" />
+          <img src={bloxSurgeMark} alt="BloxSurge logo" />
           <h1>Terms of Service</h1>
         </div>
         <div className="Info">
@@ -28,9 +28,9 @@ export default function TOS({ closeModal }) {
             <p className="ListItem">
               <p className="Title">Overview</p>
               <p className="Text">
-                By using BloxPVP.com you agree to the following Terms of
+                By using BloxSurge.com you agree to the following Terms of
                 Service. If you do not agree with these Terms of Service, you
-                are not allowed to use BloxPVP.com. You must be at least 18
+                are not allowed to use BloxSurge.com. You must be at least 18
                 years of age to use this website.
               </p>
             </p>
@@ -38,7 +38,7 @@ export default function TOS({ closeModal }) {
               <p className="Title">Items prices</p>
               <p className="Text">
                 Items prices on our site does not represent any real life value,
-                BloxPVP.com is for entertainment purposes only. BloxPVP.com does
+                BloxSurge.com is for entertainment purposes only. BloxSurge.com does
                 not give opportunity to win real money.
               </p>
             </p>
