@@ -14,7 +14,26 @@ export default function Chatbox({ Information, setModal }) {
       />
     );
   }, [Information, setModal]);
-  if (Information.rank == "Owner") {
+  const rank = String(Information.rank || "").toUpperCase();
+  if (rank === "BOT") {
+    return (
+      <div className="Chatbox Bot">
+        <img src={Information.thumbnail} alt="BloxSurge Bot" />
+        <div className="Content">
+          <div className="Username">
+            <div className="User">
+              <h1>{Information.username}</h1>
+            </div>
+            <div className="Timestamp">
+              <p>{format(Information.timestamp, "h:mm")}</p>
+            </div>
+          </div>
+          <p className="message">{Information.message}</p>
+        </div>
+      </div>
+    );
+  }
+  if (rank === "OWNER") {
     return (
       <div className="Chatbox Owner">
         <img
@@ -39,7 +58,7 @@ export default function Chatbox({ Information, setModal }) {
         </div>
       </div>
     );
-  } else if (Information.rank == "Whale") {
+  } else if (rank === "WHALE") {
     return (
       <div className="Chatbox Whale">
         <img
