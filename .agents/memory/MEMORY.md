@@ -1,0 +1,3 @@
+- [BloxPVP Vite proxy routing](bloxpvp-proxy-routing.md) — Never proxy a SPA page path (e.g. /admin); only proxy specific API sub-paths to avoid backend intercepting React Router routes.
+- [Adopt Me catalog rules](adopt-me-catalog.md) — Seed every mutation as its own record and never overwrite Admin-managed values or images.
+- [Discord audit delivery](discord-audit-delivery.md) — Webhook logging is best-effort and must never make a completed game or inventory transaction fail.
