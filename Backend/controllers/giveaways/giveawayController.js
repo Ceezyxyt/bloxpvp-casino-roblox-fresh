@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const crypto = require("crypto");
 const { validationResult, body } = require("express-validator");
 const { emitEvent } = require("../../utils/events");
+const { sendDiscordLog } = require("../../services/discordWebhookService");
 
 exports.create_giveaway = [
   asyncHandler(async (req, res, next) => {
@@ -76,6 +77,11 @@ exports.create_giveaway = [
 
       await session.commitTransaction();
       res.sendStatus(200);
+      void sendDiscordLog("giveaway", "Site giveaway created", [
+        { name: "Host", value: userInfo.username, inline: true },
+        { name: "Giveaway", value: String(newGw._id), inline: true },
+        { name: "Duration", value: "30 minutes", inline: true },
+      ]);
 
       const currentGiveaways = await getGiveaways();
 
@@ -168,6 +174,10 @@ exports.join_giveaway = [
       await newEntry.save({ session: session });
 
       await session.commitTransaction();
+      void sendDiscordLog("giveaway", "User joined giveaway", [
+        { name: "Giveaway", value: String(JoiningGiveaway._id), inline: true },
+        { name: "Player", value: Joiner.username, inline: true },
+      ]);
       return res.sendStatus(200);
     } catch (error) {
       await session.abortTransaction();
@@ -214,6 +224,11 @@ async function draw_giveaways() {
           console.log(
             `Giveaway drawn, winner ${winningPlayer.joiner.robloxId}`
           );
+          void sendDiscordLog("giveaway", "Site giveaway drawn", [
+            { name: "Giveaway", value: String(activeGiveaway._id), inline: true },
+            { name: "Winner", value: winningPlayer.joiner.username, inline: true },
+            { name: "Winner Roblox ID", value: String(winningPlayer.joiner.robloxId), inline: true },
+          ]);
           await Giveaway.updateOne(
             { _id: activeGiveaway._id },
             {
