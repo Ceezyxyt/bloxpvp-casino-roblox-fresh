@@ -1,0 +1,875 @@
+.AdminPanel {
+  min-height: 100vh;
+  background: #0a0814;
+  color: #fff;
+  padding: 2rem;
+  font-family: "Inter", sans-serif;
+}
+
+.AdminHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.AdminHeader h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(135deg, #d33148, #ff8792);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.AdminBadge {
+  background: #b52b3d;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  letter-spacing: 0.08em;
+}
+
+.AdminBack {
+  margin-left: auto;
+  background: transparent;
+  border: 1px solid #2e2550;
+  color: #aaa;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.AdminBack:hover {
+  border-color: #b52b3d;
+  color: #fff;
+}
+
+.ActionMsg {
+  background: #1a1430;
+  border: 1px solid #b52b3d;
+  color: #ff8792;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.StatsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.StatCard {
+  background: #120f22;
+  border: 1px solid #2e2550;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+
+.StatLabel {
+  color: #888;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 0.5rem;
+}
+
+.StatValue {
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin: 0;
+  color: #fff;
+}
+
+.RecentUsers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.RecentUser {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.RecentUser img {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.UsersSection {
+  background: #120f22;
+  border: 1px solid #2e2550;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.UsersHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.UsersHeader h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.SearchInput {
+  background: #0a0814;
+  border: 1px solid #2e2550;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+  min-width: 200px;
+}
+
+.SearchInput:focus {
+  border-color: #b52b3d;
+}
+
+.AdminLoading {
+  text-align: center;
+  color: #888;
+  padding: 3rem;
+}
+
+.UsersTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.UsersTable th {
+  text-align: left;
+  color: #888;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2e2550;
+  white-space: nowrap;
+}
+
+.UsersTable td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #1a1430;
+  vertical-align: middle;
+}
+
+.UsersTable tr:last-child td {
+  border-bottom: none;
+}
+
+.UsersTable tr:hover td {
+  background: #1a1430;
+}
+
+.UserCell {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.UserThumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.BalanceCell {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.RankBadge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+}
+
+.Rank-ADMIN, .Rank-OWNER {
+  background: #b52b3d22;
+  color: #ff8792;
+  border: 1px solid #b52b3d55;
+}
+
+.Rank-MOD {
+  background: #f59e0b22;
+  color: #fbbf24;
+  border: 1px solid #f59e0b55;
+}
+
+.Rank-USER {
+  background: #ffffff11;
+  color: #aaa;
+  border: 1px solid #ffffff22;
+}
+
+.ActionCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.BalanceInput {
+  background: #0a0814;
+  border: 1px solid #2e2550;
+  color: #fff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  width: 90px;
+  transition: border-color 0.2s;
+}
+
+.BalanceInput:focus {
+  border-color: #b52b3d;
+}
+
+.SetBtn {
+  background: #b52b3d;
+  border: none;
+  color: #fff;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.SetBtn:hover {
+  background: #8f1d2c;
+}
+
+.RankSelect {
+  background: #0a0814;
+  border: 1px solid #2e2550;
+  color: #fff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.Pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.Pagination button {
+  background: #1a1430;
+  border: 1px solid #2e2550;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.Pagination button:hover:not(:disabled) {
+  border-color: #b52b3d;
+}
+
+.Pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.Pagination span {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.AdminTabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.AdminTab {
+  background: #120f22;
+  border: 1px solid #2e2550;
+  color: #aaa;
+  padding: 0.6rem 1.4rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.AdminTab:hover {
+  border-color: #b52b3d;
+  color: #fff;
+}
+
+.AdminTab.active {
+  background: #b52b3d;
+  border-color: #b52b3d;
+  color: #fff;
+}
+
+.ItemsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ItemsGrid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .ItemsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ItemsPanel {
+  background: #120f22;
+  border: 1px solid #2e2550;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.CatalogSection {
+  min-width: 0;
+}
+
+.CatalogPanel {
+  overflow: hidden;
+  padding: 1.5rem;
+  background: #120f22;
+  border: 1px solid #2e2550;
+  border-radius: 12px;
+}
+
+.CatalogHeader {
+  align-items: flex-start;
+}
+
+.CatalogHint {
+  margin-top: 0.35rem;
+  color: #888;
+  font-size: 0.8rem;
+}
+
+.CatalogTableWrap {
+  max-height: min(64vh, 760px);
+  overflow: auto;
+  border: 1px solid #241c3b;
+  border-radius: 9px;
+}
+
+.CatalogTable {
+  min-width: 980px;
+}
+
+.CatalogTable thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #17112a;
+}
+
+.CatalogPreview,
+.CatalogPreviewEmpty {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  object-fit: contain;
+  background: #0a0814;
+  border-radius: 8px;
+}
+
+.CatalogPreviewEmpty {
+  color: #ff8792;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.CatalogCode,
+.CatalogUrl {
+  max-width: 220px;
+  overflow: hidden;
+  color: #8f879e;
+  font-family: monospace;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.CatalogDisplayName {
+  min-width: 170px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.CatalogInput {
+  width: 150px;
+  box-sizing: border-box;
+  padding: 0.48rem 0.55rem;
+  color: #fff;
+  background: #0a0814;
+  border: 1px solid #4a3c6f;
+  border-radius: 6px;
+  outline: none;
+}
+
+.CatalogInput:focus {
+  border-color: #d33148;
+}
+
+.CatalogValueInput {
+  width: 90px;
+}
+
+.CatalogImageInput {
+  width: 220px;
+}
+
+.CatalogEmpty {
+  padding: 3rem !important;
+  color: #888;
+  text-align: center;
+}
+
+.ItemsPanel h2 {
+  margin: 0 0 1.25rem;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.ItemsPanel h3 {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  color: #ff8792;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ItemsSidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.CreateItemForm {
+  background: #0a0814;
+  border: 1px solid #2e2550;
+  border-radius: 10px;
+  padding: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.GiveForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.FormRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.FormField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.FormField label {
+  color: #888;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.FormField .SearchInput {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.CreateBtn {
+  margin-top: 0.75rem;
+  width: 100%;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+}
+
+.DeleteBtn {
+  background: #ff3a3a22;
+  border: 1px solid #ff3a3a55;
+  color: #ff6b6b;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.DeleteBtn:hover {
+  background: #ff3a3a44;
+  border-color: #ff3a3a;
+  color: #fff;
+}
+
+.GameTag {
+  background: #1a1430;
+  border: 1px solid #2e2550;
+  color: #c07cff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.ItemThumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #1a1430;
+}
+
+.InvResults {
+  margin-top: 1rem;
+  border-top: 1px solid #2e2550;
+  padding-top: 1rem;
+}
+
+.InvUsername {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c07cff;
+  margin: 0 0 0.75rem;
+}
+
+.InvList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.InvList::-webkit-scrollbar { width: 4px; }
+.InvList::-webkit-scrollbar-track { background: #0a0814; }
+.InvList::-webkit-scrollbar-thumb { background: #2e2550; border-radius: 4px; }
+
+.InvRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 6px;
+  background: #0a0814;
+}
+
+.InvItemName {
+  font-size: 0.85rem;
+  color: #fff;
+  font-weight: 500;
+}
+
+.InvItemSub {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.UserHandle {
+  display: block;
+  color: #888;
+  font-size: 0.72rem;
+  font-weight: 400;
+}
+
+.UserSearchField {
+  position: relative;
+}
+
+.SelectedUser {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border: 1px solid #b52b3d;
+  border-radius: 8px;
+  background: #1c0c10;
+}
+
+.SelectedUser img,
+.UserSearchResults img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.SelectedUser span,
+.UserSearchResults span {
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.SelectedUser small,
+.UserSearchResults small {
+  display: block;
+  color: #999;
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+
+.SelectedUser button {
+  border: 0;
+  background: transparent;
+  color: #ff8792;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.UserSearchResults {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 2.25rem);
+  left: 0;
+  right: 0;
+  padding: 0.35rem;
+  border: 1px solid #3a151d;
+  border-radius: 8px;
+  background: #160b0e;
+  box-shadow: 0 12px 30px #0008;
+}
+
+.UserSearchResults button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.5rem;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.UserSearchResults button:hover {
+  background: #2a1117;
+}
+
+.SearchHint {
+  margin: 0.45rem 0 0;
+  color: #999;
+  font-size: 0.75rem;
+}
+
+.TaxSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.TaxOverview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1fr);
+  gap: 1rem;
+}
+
+.TaxBalanceCard,
+.TaxOwnerCard {
+  background: linear-gradient(135deg, #1c0c10, #120f22);
+  border: 1px solid #6d2432;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+}
+
+.TaxBalanceCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.TaxBalanceValue {
+  margin: 0.25rem 0 0;
+  color: #ff8792;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.TaxMuted,
+.TaxOwnerCard span,
+.TaxDescription {
+  color: #999;
+  font-size: 0.8rem;
+}
+
+.TaxMuted,
+.TaxDescription {
+  margin: 0.35rem 0 0;
+}
+
+.TaxOwnerCard strong {
+  display: block;
+  color: #fff;
+  font-size: 1.15rem;
+  margin: 0.25rem 0;
+}
+
+.TaxOwnerCard span {
+  display: block;
+}
+
+.TaxRateBadge {
+  flex-shrink: 0;
+  background: #b52b3d;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.TaxGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.TaxPanelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.TaxPanelHeader h2 {
+  margin-bottom: 0;
+}
+
+.TaxInventoryPanel,
+.TaxHistoryPanel {
+  min-width: 0;
+}
+
+.TaxInventoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.TaxInventoryRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  background: #0f0b12;
+  border: 1px solid #3a151d;
+  border-radius: 8px;
+}
+
+.TaxInventoryItemInfo {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.TaxInventoryItemInfo strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.85rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.TaxInventoryItemInfo span {
+  color: #999;
+  font-size: 0.75rem;
+}
+
+.TaxEmpty {
+  padding: 1.5rem;
+  color: #888;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.TaxInventoryRow .DeleteBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.TaxHistoryTableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.TaxHistoryTable {
+  min-width: 680px;
+}
+
+@media (max-width: 700px) {
+  .TaxOverview,
+  .TaxGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .TaxBalanceCard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
