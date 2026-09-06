@@ -72,7 +72,7 @@
         .SelectWrapper::after {
           position: relative;
           right: 20px;
-          content: url("../../assets/images/arrow.svg");
+          content: url("../../../assets/images/arrow.svg");
         }
       }
       .Creation {
