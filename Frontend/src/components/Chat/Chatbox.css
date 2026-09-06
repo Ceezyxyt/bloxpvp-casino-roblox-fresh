@@ -189,3 +189,24 @@
     }
   }
 }
+
+.Chatbox.Bot {
+  padding: 0 10px;
+  border: 1px solid #6d2432;
+  background: linear-gradient(90deg, #2b1017, #160b0e);
+}
+
+.Chatbox.Bot > img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid #d33148;
+}
+
+.Chatbox.Bot .User h1 {
+  color: #ff8792;
+}
+
+.Chatbox.Bot .message {
+  color: #f2bdc4;
+}
