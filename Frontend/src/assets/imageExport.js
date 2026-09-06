@@ -65,6 +65,8 @@ import coinsDrop from "./images/coinsDrop.svg";
 import diceGradient from "./images/diceGradient.svg";
 import coinsGradient from "./images/coinsGradient.svg";
 import verification from "./images/verification.svg";
+import bloxSurgeMark from "./images/bloxsurge-mark.png";
+import bloxSurgeLivePromo from "./images/bloxsurge-live-promo.png";
 
 export {
   discord,
@@ -134,4 +136,6 @@ export {
   diceGradient,
   coinsGradient,
   verification,
+  bloxSurgeMark,
+  bloxSurgeLivePromo,
 };
