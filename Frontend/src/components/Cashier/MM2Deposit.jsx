@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import "./MM2Deposit.css";
-import { logoGradient, backArrow } from "../../assets/imageExport";
+import { bloxSurgeMark, backArrow } from "../../assets/imageExport";
 import { useState, useEffect } from "react";
 import { m } from "framer-motion";
 import config from "../../config";
@@ -38,7 +38,7 @@ export default function MM2DepositModal({ closeModal, changeModal }) {
       >
         <div className="Nav">
           <div className="Title">
-            <img src={logoGradient} alt="bloxpvp logo" />
+            <img src={bloxSurgeMark} alt="BloxSurge logo" />
             <p>Bots</p>
           </div>
           <m.div
