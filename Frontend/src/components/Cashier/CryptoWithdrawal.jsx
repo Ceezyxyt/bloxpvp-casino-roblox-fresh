@@ -9,7 +9,7 @@ import {
   litecoinLogo,
   binanceLogo,
   usdtLogo,
-  logoGradient,
+  bloxSurgeMark,
   backArrow,
   arrow,
   robux,
@@ -146,7 +146,7 @@ export default function CryptoWithdrawal({ closeModal, changeModal }) {
           <div className="Header">
             <div className="Navigation">
               <div className="Nav">
-                <img src={logoGradient} alt="bloxpvp logo" />
+                <img src={bloxSurgeMark} alt="BloxSurge logo" />
                 <div className="NavLinks">
                   <p
                     className="NavLink Inactive"
