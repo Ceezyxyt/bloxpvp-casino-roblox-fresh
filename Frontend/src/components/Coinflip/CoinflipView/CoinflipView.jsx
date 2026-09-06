@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect, useContext } from "react";
 import PropTypes from "prop-types";
 import SocketContext from "../../../utils/SocketContext";
 import {
-  logo,
+  bloxSurgeMark,
   anonymous,
   verification,
   copy,
@@ -39,16 +39,15 @@ export default function CoinflipViewing({ Information, closeModal }) {
   }, [fairnessModal]);
 
   useEffect(() => {
-    setTimeout(() => {
-      if (gameInfo.winnerCoin != null) {
-        if (gameInfo.winnerCoin == gameInfo.ownerCoin) {
-          setWinnerDisplay("winnerOne");
-        } else {
-          setWinnerDisplay("winnerTwo");
-        }
-      }
+    setWinnerDisplay(null);
+    if (!gameInfo?.winnerCoin) return undefined;
+    const timer = setTimeout(() => {
+      setWinnerDisplay(
+        gameInfo.winnerCoin === gameInfo.ownerCoin ? "winnerOne" : "winnerTwo"
+      );
     }, 3750);
-  }, [gameInfo]);
+    return () => clearTimeout(timer);
+  }, [gameInfo?._id, gameInfo?.winnerCoin, gameInfo?.ownerCoin]);
 
   useEffect(() => {
     socket.on("COINFLIP_FINISHED", handleCoinflipUpdate);
@@ -184,7 +183,7 @@ export default function CoinflipViewing({ Information, closeModal }) {
           className="ViewingModal"
           onClick={(e) => e.stopPropagation()}
         >
-          <img src={logo} alt="BLOXPVP Logo" />
+          <img src={bloxSurgeMark} alt="BloxSurge logo" />
           <div className="Players">
             <div
               className={`PlayerOne ${
@@ -217,11 +216,19 @@ export default function CoinflipViewing({ Information, closeModal }) {
               <p className="VS">VS</p>
             ) : (
               <video
+                key={`${gameInfo._id}-${gameInfo.winnerCoin}`}
                 playsInline
                 autoPlay
                 muted
                 src={gameInfo.winnerCoin == "heads" ? HeadsVideo : TailsVideo}
                 width={300}
+                onEnded={() =>
+                  setWinnerDisplay(
+                    gameInfo.winnerCoin === gameInfo.ownerCoin
+                      ? "winnerOne"
+                      : "winnerTwo"
+                  )
+                }
               ></video>
             )}
             <div
@@ -306,7 +313,7 @@ export default function CoinflipViewing({ Information, closeModal }) {
               </div>
               <div className="SecondItems">
                 {gameInfo.winnerCoin &&
-                  gameInfo.playerTwo.items.map((item) => {
+                  (gameInfo.playerTwo?.items || []).map((item) => {
                     return (
                       <div className="Item" key={item._id}>
                         <div
@@ -315,7 +322,7 @@ export default function CoinflipViewing({ Information, closeModal }) {
                               ? "PS99"
                               : "imageContainer"
                           }`}
-                          key={item._id + Math.random()}
+                          key={item._id}
                         >
                           <img
                             src={`${item.item.item_image}`}
