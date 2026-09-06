@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { m } from "framer-motion";
 
-export default function MobileSidebar({ closeMenu }) {
+export default function MobileSidebar({ closeMenu, onValues }) {
   const location = useLocation();
   return (
     <m.div
@@ -69,11 +69,25 @@ export default function MobileSidebar({ closeMenu }) {
               <p>Marketplace</p>
             </div>
           </Link>
+          <Link
+            className={`Game Values ${
+              location.pathname == "/values" ? "Active" : "Inactive"
+            }`}
+            to={"/values"}
+            onClick={(event) => {
+              if (!onValues) return;
+              event.preventDefault();
+              onValues();
+            }}
+          >
+            <div className="TopLayer"><p>Values</p></div>
+            <div className="ShadowLayer"><p>Values</p></div>
+          </Link>
         </div>
         <div className="SocialLinks">
           <a
             className="Link Discord"
-            href="https://discord.gg/bloxpvp"
+            href="https://discord.gg/bloxsurge"
             target="_blank"
           >
             <img src={discord} alt="Discord Logo" />
@@ -87,4 +101,5 @@ export default function MobileSidebar({ closeMenu }) {
 
 MobileSidebar.propTypes = {
   closeMenu: PropTypes.func,
+  onValues: PropTypes.func,
 };
