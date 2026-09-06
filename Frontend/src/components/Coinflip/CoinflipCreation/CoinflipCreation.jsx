@@ -24,15 +24,20 @@ export default function CoinflipCreation({ closeModal, renderModal }) {
       headers: {
         Authorization: `Bearer ${getJWT()}`,
       },
-    }).then(async (res) => {
-      const loadedPets = await res.json();
-      const sortedPets = sort(loadedPets.userItems).desc((pet) => {
-        return Number(pet.item.item_value);
-      });
-      setPets(sortedPets);
-      setTotalValue(loadedPets.totalValue);
-      setIsLoading(false);
-    });
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          setIsLoading(false);
+          return;
+        }
+        const loadedPets = await res.json();
+        const items = loadedPets?.userItems || [];
+        const sortedPets = sort(items).desc((pet) => Number(pet.item?.item_value || 0));
+        setPets(sortedPets);
+        setTotalValue(loadedPets?.totalValue || 0);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
   }, []);
 
   const handleCoinflipCreation = useCallback(
