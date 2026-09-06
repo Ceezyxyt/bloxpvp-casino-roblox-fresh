@@ -8,16 +8,26 @@ import "./Home.css";
 import { menu, mail, chat } from "../../assets/imageExport";
 import { useCallback, useState } from "react";
 import { AnimatePresence } from "framer-motion";
+import ValuesPopup from "../../components/Popups/ValuesPopup";
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [tabOpen, setTabOpen] = useState(null);
 
+  const handleValuesOpen = useCallback(() => {
+    setMenuOpen(false);
+    setChatOpen(false);
+    setTabOpen(
+      <ValuesPopup closeModal={() => setTabOpen(null)} />
+    );
+  }, []);
+
   const handleMenuOpen = useCallback(() => {
     if (menuOpen == false) {
       setTabOpen(
         <MobileSidebar
+            onValues={handleValuesOpen}
           closeMenu={() => {
             setTabOpen(null);
             setMenuOpen(false);
@@ -61,7 +71,7 @@ export default function Home() {
           <img src={menu} alt="menu icon" />
           <p>MENU</p>
         </div>
-        <a className="Tab" href="https://discord.gg/bloxpvp" target="_blank">
+        <a className="Tab" href="https://discord.gg/bloxsurge" target="_blank">
           <img src={mail} alt="mail icon" />
           <p>SUPPORT</p>
         </a>
