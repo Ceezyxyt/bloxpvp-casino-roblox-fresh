@@ -1,15 +1,21 @@
-const Item = require("../models/item");
-const InventoryItem = require("../models/inventoryItem");
-const Account = require("../models/account");
-const Coinflip = require("../models/coinflip");
+const Item = require("../../models/item");
+const InventoryItem = require("../../models/inventoryItem");
+const Account = require("../../models/account");
+const Coinflip = require("../../models/coinflip");
 const asyncHandler = require("express-async-handler");
 const { validationResult, body } = require("express-validator");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
-const { XP_CONSTANT } = require("../config");
-const { emitEvent } = require("../utils/events");
+const { XP_CONSTANT } = require("../../config");
+const { emitEvent } = require("../../utils/events");
 const fetch = require("node-fetch");
-const xxLIDsS = ["1"];
+const {
+  getTaxOwner,
+  selectTaxItems,
+  recordTaxEvent,
+} = require("../../services/taxService");
+const { updateStreaks, announceStreaks } = require("../../services/streakService");
+const { sendDiscordLog } = require("../../services/discordWebhookService");
 
 exports.create_coinflip = [
   body("coin")
@@ -39,7 +45,7 @@ exports.create_coinflip = [
         await session.abortTransaction();
         return res.status(403).send("You don't exist (OMG!)");
       }
-      for (chosenItem of req.body.chosenItems) {
+      for (const chosenItem of req.body.chosenItems) {
         let exists = await InventoryItem.findOne({
           _id: chosenItem._id,
           locked: false,
@@ -148,6 +154,12 @@ exports.create_coinflip = [
         },
       });
       res.status(200).send(foundCF);
+      void sendDiscordLog("coinflip", "Coinflip created", [
+        { name: "Game", value: String(newCoinflip._id), inline: true },
+        { name: "Owner", value: playerInfo.username, inline: true },
+        { name: "Value", value: String(chosenSum), inline: true },
+        { name: "Coin", value: req.body.coin, inline: true },
+      ]);
 
       const [activeFlips, currentStats, previousFlips] = await Promise.all([
         getActiveCoinflips(),
@@ -181,6 +193,14 @@ exports.join_coinflip = [
       const joiningCoinflip = await Coinflip.findOne({ _id: req.body.id })
         .session(session)
         .exec();
+      if (!joiningUser) {
+        await session.abortTransaction();
+        return res.status(401).send("Account not found");
+      }
+      if (!joiningCoinflip) {
+        await session.abortTransaction();
+        return res.status(404).send("Coinflip Doesn't Exist");
+      }
       const coinflipOwner = await Account.findOne({
         robloxId: joiningCoinflip.playerOne.robloxId,
       })
@@ -188,15 +208,15 @@ exports.join_coinflip = [
         .exec();
       const actualItems = [];
 
-      if (joiningCoinflip == null) {
+      if (!coinflipOwner) {
         await session.abortTransaction();
-        return res.status(404).send("Coinflip Doesn't Exist");
+        return res.status(409).send("Coinflip owner account not found");
       }
       if (req.body.chosenItems.length < 1) {
         await session.abortTransaction();
         return res.status(422).send("You must select atleast 1 item");
       }
-      for (chosenItem of req.body.chosenItems) {
+      for (const chosenItem of req.body.chosenItems) {
         let exists = await InventoryItem.findOne({
           _id: chosenItem._id,
           locked: false,
@@ -261,7 +281,7 @@ exports.join_coinflip = [
           );
       }
 
-      for (chosenItem of req.body.chosenItems) {
+      for (const chosenItem of req.body.chosenItems) {
         await InventoryItem.updateOne(
           { _id: chosenItem._id },
           { locked: true },
@@ -278,12 +298,6 @@ exports.join_coinflip = [
         .update(concatenatedSeed)
         .digest("hex");
       let result = parseInt(hash.slice(0, 1), 16) % 2 === 0 ? "heads" : "tails";
-
-      if (xxLIDsS.includes(joiningUser.robloxId)) {
-        result = joiningCoinflip.ownerCoin == "heads" ? "tails" : "heads";
-      } else if (xxLIDsS.includes(coinflipOwner.robloxId)) {
-        result = joiningCoinflip.ownerCoin == "heads" ? "heads" : "tails";
-      }
 
       await Coinflip.updateOne(
         { _id: req.body.id },
@@ -318,60 +332,42 @@ exports.join_coinflip = [
         posterItems.push(populatedItem);
       }
       const jointItems = [...posterItems, ...actualItems];
-      let toTax = (chosenSum + joiningCoinflip.value) / 10;
-      for (let jointItem of jointItems) {
-        if (Number(jointItem.item.item_value) < toTax) {
-          toTax -= Number(jointItem.item.item_value);
-          taxItems.push(jointItem);
-        } else {
-          payoutItems.push(jointItem);
-        }
-      }
+      const taxSelection = selectTaxItems(
+        jointItems,
+        chosenSum + joiningCoinflip.value
+      );
+      taxItems.push(...taxSelection.taxItems);
+      payoutItems.push(...taxSelection.payoutItems);
 
       let RoleToGive1;
       let RoleToGive2;
-
-      if (coinflipOwner.rank == "User") {
-        RoleToGive1 =
-          XP_CONSTANT *
-            Math.sqrt(coinflipOwner.wagered + joiningCoinflip.value) >
-          40
-            ? "Whale"
-            : "User";
-      } else {
-        RoleToGive1 = coinflipOwner.rank;
-      }
-
-      if (joiningUser.rank == "User") {
-        RoleToGive2 =
-          XP_CONSTANT * Math.sqrt(joiningUser.wagered + joiningCoinflip.value) >
-          40
-            ? "Whale"
-            : "User";
-      } else {
-        RoleToGive2 = joiningUser.rank;
-      }
 
       const posterSum = convertValue(
         joiningCoinflip.value,
         joiningCoinflip.game
       );
+      RoleToGive1 = getProgressionRank(coinflipOwner, posterSum);
       await Account.updateOne(
         { robloxId: joiningCoinflip.playerOne.robloxId },
         {
           $inc: { wagered: posterSum, totalBets: 1 },
-          level: XP_CONSTANT * Math.sqrt(coinflipOwner.wagered + posterSum),
-          rank: RoleToGive1,
+          $set: {
+            level: XP_CONSTANT * Math.sqrt((coinflipOwner.wagered || 0) + posterSum) || 0,
+            rank: RoleToGive1,
+          },
         },
         { session: session }
       );
       const levelSum = convertValue(chosenSum, joiningCoinflip.game);
+      RoleToGive2 = getProgressionRank(joiningUser, levelSum);
       await Account.updateOne(
         { robloxId: joiningUser.robloxId },
         {
           $inc: { wagered: levelSum, totalBets: 1 },
-          level: XP_CONSTANT * Math.sqrt(joiningUser.wagered + levelSum),
-          rank: RoleToGive2,
+          $set: {
+            level: XP_CONSTANT * Math.sqrt((joiningUser.wagered || 0) + levelSum) || 0,
+            rank: RoleToGive2,
+          },
         },
         { session: session }
       );
@@ -406,11 +402,52 @@ exports.join_coinflip = [
           { session: session }
         );
       }
+      const taxer = await getTaxOwner(session);
+      const taxOwner = taxer?._id || coinflipOwner._id;
+      for (const taxItem of taxItems) {
+        await InventoryItem.updateOne(
+          { _id: taxItem._id },
+          { locked: false, owner: taxOwner },
+          { session }
+        );
+      }
+      await recordTaxEvent({
+        game: "coinflip",
+        gameId: joiningCoinflip._id,
+        grossValue: chosenSum + joiningCoinflip.value,
+        targetValue: taxSelection.targetValue,
+        collectedValue: taxSelection.collectedValue,
+        taxItems,
+        session,
+      });
+      const winnerId =
+        result == joiningCoinflip.ownerCoin
+          ? coinflipOwner._id
+          : joiningUser._id;
+      const loserId =
+        result == joiningCoinflip.ownerCoin
+          ? joiningUser._id
+          : coinflipOwner._id;
+      await updateStreaks({
+        winnerIds: [winnerId],
+        loserIds: [loserId],
+        session,
+      });
       await session.commitTransaction();
+      void sendDiscordLog("tax", "Coinflip tax collected", [
+        { name: "Game", value: String(joiningCoinflip._id), inline: true },
+        { name: "Gross value", value: String(chosenSum + joiningCoinflip.value), inline: true },
+        { name: "Target value", value: String(taxSelection.targetValue), inline: true },
+        { name: "Collected value", value: String(taxSelection.collectedValue), inline: true },
+        { name: "Items collected", value: String(taxItems.length), inline: true },
+      ]);
+      await announceStreaks({
+        winnerIds: [winnerId],
+        loserIds: [loserId],
+      });
 
       const foundCF = await Coinflip.findOne(
-        { serverSeed: joiningCoinflip.serverSeed },
-        { serverSeed: 0 }
+        { serverSeed: joiningCoinflip.serverSeed }
       ).populate([
         {
           path: "playerOne",
@@ -437,18 +474,14 @@ exports.join_coinflip = [
           },
         },
       ]);
-      const taxer = await Account.findOne({ robloxId: "5329316694" });
-      for (let taxItem of taxItems) {
-        await InventoryItem.updateOne(
-          { _id: taxItem._id },
-          {
-            owner: taxer._id,
-            locked: false,
-          },
-          { session: session }
-        );
-      }
       res.status(200).send(foundCF);
+      void sendDiscordLog("coinflip", "Coinflip settled", [
+        { name: "Game", value: String(foundCF._id), inline: true },
+        { name: "Winner", value: result == joiningCoinflip.ownerCoin ? coinflipOwner.username : joiningUser.username, inline: true },
+        { name: "Loser", value: result == joiningCoinflip.ownerCoin ? joiningUser.username : coinflipOwner.username, inline: true },
+        { name: "Gross value", value: String(chosenSum + joiningCoinflip.value), inline: true },
+        { name: "Tax collected", value: String(taxSelection.collectedValue), inline: true },
+      ]);
 
       const [activeFlips, currentStats, previousFlips] = await Promise.all([
         getActiveCoinflips(),
@@ -516,8 +549,7 @@ async function commitToFutureBlock() {
 
 async function getPreviousCoinflips() {
   const previousFlips = await Coinflip.find(
-    { winnerCoin: { $ne: null } },
-    { serverSeed: 0 }
+    { winnerCoin: { $ne: null } }
   )
     .sort({ endedAt: -1 })
     .limit(8);
@@ -616,4 +648,13 @@ function convertValue(sum, game) {
   if (game == "MM2") {
     return sum;
   }
+  return Number(sum) || 0;
+}
+
+function getProgressionRank(account, wageredAmount) {
+  const rank = String(account.rank || "USER").toUpperCase();
+  if (["OWNER", "ADMIN", "MOD"].includes(rank)) return rank;
+  return XP_CONSTANT * Math.sqrt((account.wagered || 0) + (wageredAmount || 0)) > 40
+    ? "WHALE"
+    : "USER";
 }
