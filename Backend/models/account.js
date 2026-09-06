@@ -13,6 +13,8 @@ const accountSchema = new mongoose.Schema({
   wagered: { type: Number, required: false, default: 0 },
   totalBets: { type: Number, required: false, default: 0 },
   gameWins: { type: Number, required: false, default: 0 },
+  winStreak: { type: Number, default: 0 },
+  lossStreak: { type: Number, default: 0 },
   diceClientSeed: String,
   limboClientSeed: String,
   minesClientSeed: String,
