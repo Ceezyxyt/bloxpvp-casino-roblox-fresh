@@ -1,4 +1,4 @@
-import { logoGradient } from "../../assets/imageExport";
+import { bloxSurgeMark } from "../../assets/imageExport";
 import PropTypes from "prop-types";
 import "./ChatRules.css";
 import { m } from "framer-motion";
@@ -20,7 +20,7 @@ export default function ChatRules({ closeModal }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="Header">
-          <img src={logoGradient} alt="BLOXPVP Logo" />
+          <img src={bloxSurgeMark} alt="BloxSurge logo" />
           <h1>Chat Rules</h1>
         </div>
         <div className="Rules">
