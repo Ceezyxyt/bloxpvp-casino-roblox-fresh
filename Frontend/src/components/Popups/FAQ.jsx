@@ -1,4 +1,4 @@
-import { logoGradient } from "../../assets/imageExport";
+import { bloxSurgeMark } from "../../assets/imageExport";
 import PropTypes from "prop-types";
 import "./FAQ.css";
 import { m } from "framer-motion";
@@ -20,7 +20,7 @@ export default function FAQ({ closeModal }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="Header">
-          <img src={logoGradient} alt="BLOXPVP Logo" />
+          <img src={bloxSurgeMark} alt="BloxSurge logo" />
           <h1>Frequently Asked Questions</h1>
         </div>
         <div className="Info">
@@ -64,9 +64,9 @@ export default function FAQ({ closeModal }) {
               </p>
             </p>
             <p className="ListItem">
-              <p className="Title">Can BloxPVP be rigged?</p>
+              <p className="Title">Can BloxSurge be rigged?</p>
               <p className="Text">
-                BloxPVP itself has no impact on the outcome of particular games.
+                BloxSurge itself has no impact on the outcome of particular games.
                 Due to the provably fair system, you&apos;re now able to verify
                 each games&apos; outcome. Find more information by pressing the
                 Fair button.
@@ -77,8 +77,8 @@ export default function FAQ({ closeModal }) {
                 I won a game, but I didn&apos;t receive all the items.
               </p>
               <p className="Text">
-                BloxPVP takes a cut of 0-10% of every game to keep the site
-                functional.
+                 BloxSurge takes a fixed 20% item tax from every Coinflip and
+                 Jackpot game to keep the site functional.
               </p>
             </p>
             <p className="ListItem">
