@@ -1,0 +1,237 @@
+.ValuesModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(6, 3, 5, 0.82);
+  backdrop-filter: blur(14px);
+}
+
+.ValuesModal {
+  display: flex;
+  flex-direction: column;
+  width: min(980px, 100%);
+  max-height: min(780px, calc(100vh - 2rem));
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(211, 49, 72, 0.26), transparent 42%),
+    linear-gradient(180deg, #1d0d12 0%, #0f080a 100%);
+  border: 1px solid #6d2635;
+  border-radius: 20px;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.6), 0 0 55px rgba(181, 43, 61, 0.18);
+}
+
+.ValuesModalHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.5rem 1.6rem 1.1rem;
+  border-bottom: 1px solid rgba(255, 135, 146, 0.16);
+}
+
+.ValuesModalKicker {
+  color: #ff8792;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.ValuesModalHeader h2 {
+  margin: 0.25rem 0;
+  font-size: clamp(1.55rem, 3vw, 2.2rem);
+}
+
+.ValuesModalHeader p:last-child {
+  color: #b9a1a6;
+  font-size: 0.8rem;
+}
+
+.ValuesModalClose {
+  align-self: flex-start;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  color: #cdbbc0 !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 50%;
+  box-shadow: none !important;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.ValuesModalClose:hover {
+  color: #fff !important;
+  background: rgba(211, 49, 72, 0.18) !important;
+  transform: rotate(90deg);
+}
+
+.ValuesModalToolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 1rem 1.6rem;
+}
+
+.ValuesModalToolbar input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.82rem 1rem;
+  color: #fff;
+  background: rgba(8, 5, 7, 0.72);
+  border: 1px solid #58202d;
+  border-radius: 10px;
+  outline: none;
+}
+
+.ValuesModalToolbar input:focus {
+  border-color: #d33148;
+  box-shadow: 0 0 0 3px rgba(211, 49, 72, 0.16);
+}
+
+.ValuesModalToolbar span {
+  color: #ff8792;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.ValuesModalContent {
+  min-height: 12rem;
+  overflow-y: auto;
+  padding: 0 1.6rem 1.6rem;
+}
+
+.ValuesModalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(245px, 1fr));
+  gap: 0.7rem;
+}
+
+.ValuesModalPet {
+  display: block;
+  width: 100%;
+  padding: 0.85rem;
+  color: #fff !important;
+  text-align: left;
+  background: linear-gradient(145deg, #2c121a, #160b0e) !important;
+  border: 1px solid #4a1b27 !important;
+  border-radius: 12px;
+  box-shadow: none !important;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.ValuesModalPet:hover,
+.ValuesModalPet.Selected {
+  background: linear-gradient(145deg, #451622, #1d0c12) !important;
+  border-color: #d33148 !important;
+  transform: translateY(-2px);
+}
+
+.ValuesModalPetTop {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.ValuesModalPetTop img,
+.ValuesModalPlaceholder {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  color: #ff8792;
+  background: #0d0709;
+  border-radius: 9px;
+  object-fit: contain;
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+.ValuesModalPetName {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.ValuesModalPetName strong {
+  overflow: hidden;
+  font-size: 0.88rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ValuesModalPetName small {
+  color: #9f858b;
+  font-size: 0.68rem;
+}
+
+.ValuesModalPetTop b {
+  margin-left: auto;
+  color: #ff8792;
+  font-size: 0.84rem;
+}
+
+.ValuesModalTable {
+  display: block;
+  margin-top: 0.8rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid #4a1b27;
+}
+
+.ValuesModalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.28rem 0;
+  color: #ccb7bc;
+  font-size: 0.7rem;
+}
+
+.ValuesModalRow span:last-child {
+  color: #fff;
+  font-weight: 700;
+}
+
+.ValuesModalRow.Header {
+  color: #ff8792;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ValuesModalState {
+  display: grid;
+  min-height: 12rem;
+  place-items: center;
+  color: #b9a1a6;
+  font-size: 0.9rem;
+}
+
+.ValuesSpinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: 0.7rem;
+  border: 3px solid #3a151d;
+  border-top-color: #d33148;
+  border-radius: 50%;
+  animation: valuesSpin 700ms linear infinite;
+}
+
+@keyframes valuesSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 600px) {
+  .ValuesModalBackdrop { padding: 0.65rem; }
+  .ValuesModal { max-height: calc(100vh - 1.3rem); border-radius: 16px; }
+  .ValuesModalHeader, .ValuesModalToolbar, .ValuesModalContent { padding-left: 1rem; padding-right: 1rem; }
+  .ValuesModalToolbar { align-items: stretch; flex-direction: column; }
+  .ValuesModalToolbar span { text-align: right; }
+  .ValuesModalGrid { grid-template-columns: 1fr; }
+}
