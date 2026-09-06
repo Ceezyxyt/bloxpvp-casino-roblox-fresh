@@ -8,6 +8,7 @@ import {
   longLogo,
   coloredLogo,
   dollarsNav,
+  bloxSurgeMark,
 } from "../../assets/imageExport";
 import { useContext, useCallback, useState, useEffect } from "react";
 import UserContext from "../../utils/UserContext";
@@ -16,8 +17,7 @@ import Withdraw from "../Cashier/Withdraw";
 import Deposit from "../Cashier/Deposit";
 import FAQ from "../Popups/FAQ";
 import TOS from "../Popups/TOS";
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import SocketContext from "../../utils/SocketContext";
 import Cookies from "js-cookie";
 import { AnimatePresence, m } from "framer-motion";
@@ -25,8 +25,10 @@ import { AnimatePresence, m } from "framer-motion";
 import Profile from "../Popups/Profile";
 import ForgotPassword from "../Popups/ForgotPassword";
 import ConnectRoblox from "../Account/ConnectRoblox";
+import Fairness from "../Popups/Fairness";
+import ValuesPopup from "../Popups/ValuesPopup";
 export default function Navbar() {
-  const location = useLocation();
+  const navigate = useNavigate();
   const userData = useContext(UserContext);
   const [modalState, setModalState] = useState(null);
   const [userBalance, setUserBalance] = useState(0);
@@ -67,7 +69,7 @@ export default function Navbar() {
   }, []);
 
   const handleLogout = useCallback(() => {
-    Cookies.remove("jwt", { path: "" });
+    Cookies.remove("jwt", { path: "/" });
     window.location.reload();
   }, []);
 
@@ -90,7 +92,11 @@ export default function Navbar() {
   return (
     <>
       <div className="Navbar">
-        <img src={longLogo} alt="Long Form Logo" className="Logo" />
+        <div className="BrandLockup DesktopBrand" aria-label="BloxSurge">
+          <span className="BrandWord Blox">Blox</span>
+          <img src={bloxSurgeMark} alt="" />
+          <span className="BrandWord Surge">Surge</span>
+        </div>
         <div className="Content">
           <div className="InfoLinks">
             <div className="Link Purple Raffle">
@@ -106,7 +112,12 @@ export default function Navbar() {
               <div className="Responsibility Link">
                 <p>Game Responsibly</p>
               </div>
-              <div className="Fairness Link">
+              <div
+                className="Fairness Link"
+                onClick={() =>
+                  setModalState(<Fairness closeModal={() => setModalState(null)} />)
+                }
+              >
                 <p>Fairness</p>
               </div>
             </div>
@@ -117,6 +128,14 @@ export default function Navbar() {
               }
             >
               <p>FAQ</p>
+            </div>
+            <div
+              className="Link ValuesLink"
+              onClick={() =>
+                setModalState(<ValuesPopup closeModal={() => setModalState(null)} />)
+              }
+            >
+              <p>Values</p>
             </div>
             <div
               className="Link TOS"
@@ -133,46 +152,16 @@ export default function Navbar() {
               <a href="https://twitter.com/bloxpvp1" target="_blank">
                 <img src={twitterBox} alt="Twitter" className="Twitter" />
               </a>
-              <a href="https://discord.gg/bloxpvp" target="_blank">
+              <a href="https://discord.gg/bloxsurge" target="_blank">
                 <img src={discordBox} alt="Discord" className="Discord" />
               </a>
             </div>
           </div>
           <div className="NavLinks">
-            <img
-              src={coloredLogo}
-              style={{ display: "none" }}
-              alt="bloxpvp logo"
-              className="Logo"
-            />
-            <div className="GameLinks">
-              <Link
-                className={`GameLink Coinflip ${
-                  location.pathname == "/" ? "Active" : "Inactive"
-                }`}
-                to={"/"}
-              >
-                <img src="" alt="" />
-                <p>Coinflip</p>
-              </Link>
-              <Link
-                className={`GameLink Jackpot ${
-                  location.pathname == "/jackpot" ? "Active" : "Inactive"
-                }`}
-                to={"/jackpot"}
-              >
-                <img src="" alt="" />
-                <p>Jackpot</p>
-              </Link>
-              <Link
-                className={`GameLink Marketplace ${
-                  location.pathname == "/marketplace" ? "Active" : "Inactive"
-                }`}
-                to={"/marketplace"}
-              >
-                <img src="" alt="" />
-                <p>Marketplace</p>
-              </Link>
+            <div className="BrandLockup CompactBrand" aria-label="BloxSurge">
+              <span className="BrandWord Blox">Blox</span>
+              <img src={bloxSurgeMark} alt="" />
+              <span className="BrandWord Surge">Surge</span>
             </div>
             {userData && (
               <div className="Wallet">
@@ -206,6 +195,27 @@ export default function Navbar() {
                 >
                   <p>Wallet</p>
                 </div>
+              </div>
+            )}
+            {userData && ["OWNER", "ADMIN"].includes(String(userData.rank || "").toUpperCase()) && (
+              <div
+                className="AdminPanelBtn"
+                onClick={() => navigate("/admin")}
+                style={{
+                  background: "linear-gradient(135deg, #d33148, #8f1d2c)",
+                  color: "#fff",
+                  padding: "0.4rem 1rem",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontWeight: "700",
+                  fontSize: "0.8rem",
+                  letterSpacing: "0.05em",
+                  marginRight: "0.5rem",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
+                ⚙ Admin
               </div>
             )}
             {userData && (
