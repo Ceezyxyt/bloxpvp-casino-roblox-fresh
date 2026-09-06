@@ -29,13 +29,24 @@ export default function CoinflipJoining({
         Authorization: `Bearer ${getJWT()}`,
       },
     }).then(async (res) => {
+      if (!res.ok) {
+        setPets([]);
+        setTotalValue(0);
+        setIsLoading(false);
+        return;
+      }
       const loadedPets = await res.json();
-      const sortedPets = sort(loadedPets.userItems).desc((pet) => {
+      const sortedPets = sort(Array.isArray(loadedPets.userItems) ? loadedPets.userItems : []).desc((pet) => {
         return Number(pet.item.item_value);
       });
       setPets(sortedPets);
-      setTotalValue(loadedPets.totalValue);
+      setTotalValue(Number(loadedPets.totalValue) || 0);
       setIsLoading(false);
+    }).catch(() => {
+      setPets([]);
+      setTotalValue(0);
+      setIsLoading(false);
+      toast.error("Unable to load your inventory");
     });
   }, []);
 
@@ -92,7 +103,7 @@ export default function CoinflipJoining({
         setSelectedValue(temp);
         setSelectedPets(arr);
         const sortedPets = sort(pets).desc((pet) => {
-          pet.item.item_value;
+          return Number(pet.item.item_value);
         });
         setPets(sortedPets.filter((currentPet) => currentPet != pet));
       } else if (checkSelected == true) {
