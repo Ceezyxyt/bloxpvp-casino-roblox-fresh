@@ -4,12 +4,45 @@
   background-color: #19172c;
   gap: 40px;
   z-index: 99;
-  > img {
+  .BrandLockup {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    white-space: nowrap;
+    user-select: none;
+    .BrandWord {
+      font-size: 27px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .Blox {
+      color: #fff;
+    }
+    .Surge {
+      color: #d33148;
+      text-shadow: 0 0 20px rgba(211, 49, 72, 0.35);
+    }
+    img {
+      width: 46px;
+      height: 46px;
+      object-fit: contain;
+    }
+  }
+  .DesktopBrand {
     align-self: center;
     width: 210px;
-    height: 101px;
+    height: 95px;
+    margin-left: 18px;
     pointer-events: none;
-    user-select: none;
+  }
+  .CompactBrand {
+    display: none;
+    img {
+      width: 50px;
+      height: 50px;
+    }
   }
   .Content {
     display: flex;
@@ -30,10 +63,10 @@
 
       .Link.Purple {
         > p {
-          color: #863aff;
+          color: #d33148;
           font-weight: 600;
           font-size: 10px;
-          text-shadow: 0px 0px 20px rgba(134, 58, 255, 0.68);
+          text-shadow: 0px 0px 20px rgba(211, 49, 72, 0.45);
         }
       }
 
@@ -171,11 +204,11 @@
           display: block;
           position: absolute;
           bottom: 0px;
-          background-color: #7c00ff;
+           background-color: #b52b3d;
           height: 2px;
           width: 100%;
           border-radius: 19px 19px 0px 0px;
-          box-shadow: 0px -4px 23px 0px #7d00ff;
+           box-shadow: 0px -4px 23px 0px #b52b3d;
         }
 
         .GameLink:hover {
@@ -192,7 +225,7 @@
 
         .Active {
           p {
-            color: #7c00ff;
+             color: #d33148;
           }
 
           background-color: #19172c;
@@ -255,10 +288,10 @@
       .Wallet {
         display: flex;
         justify-content: center;
-        background: linear-gradient(
+           background: linear-gradient(
             to bottom,
             rgba(0, 0, 0, 0.1),
-            rgba(134, 58, 255, 0.3)
+             rgba(181, 43, 61, 0.3)
           )
           border-box;
         border: 1.5px solid transparent;
@@ -320,7 +353,7 @@
 
         .Deposit {
           border-radius: 0px 5px 5px 0px;
-          background: #863aff;
+           background: #b52b3d;
           background-blend-mode: overlay;
           width: 62px;
           height: 47px;
@@ -459,7 +492,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: linear-gradient(180deg, #a448ff 0%, #873aff 100%);
+         background: linear-gradient(180deg, #d33148 0%, #8f1d2c 100%);
         color: white;
         height: 40px;
         width: 110px;
@@ -469,7 +502,7 @@
         font-family: Poppins;
         font-weight: 500;
         border: 2px solid transparent;
-        box-shadow: 0px 0px 24.700000762939453px 0px #863aff33;
+         box-shadow: 0px 0px 24.700000762939453px 0px #b52b3d33;
         transition: 0.1s;
         &:hover {
           cursor: pointer;
@@ -493,8 +526,9 @@
     display: none !important;
   }
 
-  .Navbar > img {
-    display: none;
+  .Navbar > .DesktopBrand {
+    display: flex !important;
+    margin-left: 18px;
   }
 
   .InfoLinks {
@@ -505,10 +539,8 @@
     display: none !important;
   }
 
-  .NavLinks > .Logo {
-    display: block !important;
-    width: 80px;
-    height: 70px;
+  .NavLinks > .CompactBrand {
+    display: none !important;
   }
 
   .Profile > .User > .Logout {
@@ -532,7 +564,7 @@
 
   .Wallet > .Cashier {
     border-radius: 0px 5px 5px 0px;
-    background: #863aff;
+     background: #b52b3d;
     background-blend-mode: overlay;
     width: 50px;
     height: 47px;
@@ -562,6 +594,14 @@
 }
 
 @media screen and (max-width: 840px) {
+  .Navbar > .DesktopBrand {
+    display: none !important;
+  }
+
+  .NavLinks > .CompactBrand {
+    display: flex !important;
+  }
+
   .Notifications {
     display: none !important;
   }
@@ -571,9 +611,16 @@
     padding-left: 0 !important;
   }
 
-  .NavLinks > .Logo {
-    height: 60px !important;
-    width: 60px !important;
+   .NavLinks > .CompactBrand {
+     height: 60px !important;
+     width: 70px !important;
+     .BrandWord {
+       display: none;
+     }
+     img {
+       width: 52px;
+       height: 52px;
+     }
   }
 
   .GameInteractivity {
