@@ -1,0 +1,16 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "QzKHYsq44YU0DogHxkg0g"
+uri = "file://BloxSurgev4revamp.zip"
+type = "unspecified"
+title = "BloxSurgev4revamp.zip"
+description = "Final BloxSurge Adopt Me catalog release with 1,624 pet variants, values page, per-variant Admin editing, BloxSurge favicon, streak bot announcements, mobile layout, source, assets, configs, and lockfiles."
+logical_id = "46f4bb2d-bba2-4523-823e-8efe0edeb062"
+content_hash = "sha256:1ab9c21abe0854d1ca5eb3d559da1498c12c9fc7801df946b26d73e06208d901"
+size = 21730996
+mtime_ms = 1788454672808
+storage_uri = "gcs://replit-rams-assets-janeway/rams/assets/repl:dbf9c3b0-bc05-40bb-accf-ef59cb4e85fe/46f4bb2d-bba2-4523-823e-8efe0edeb062/637103c5-34c6-434e-8928-90368ff7018e"
+storage_version_token = "1788454680102120"
+content_type = "application/octet-stream"
