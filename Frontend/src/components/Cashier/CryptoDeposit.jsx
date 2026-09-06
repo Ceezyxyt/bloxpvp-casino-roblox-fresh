@@ -7,7 +7,7 @@ import {
   litecoinLogo,
   binanceLogo,
   usdtLogo,
-  logoGradient,
+  bloxSurgeMark,
   backArrow,
   arrow,
   regenerate,
@@ -188,7 +188,7 @@ export default function CryptoDepositModal({ closeModal, changeModal }) {
           <div className="Header">
             <div className="Navigation">
               <div className="Nav">
-                <img src={logoGradient} alt="bloxpvp logo" />
+                <img src={bloxSurgeMark} alt="BloxSurge logo" />
                 <div className="NavLinks">
                   <p className="NavLink Active">Deposit</p>
                   <p className="NavLink Inactive" onClick={handleModalChange}>
