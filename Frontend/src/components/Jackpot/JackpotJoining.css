@@ -104,13 +104,13 @@
               animation: coinAnimationTails forwards 0.3s;
             }
             .Heads {
-              background-image: url("../../../assets/images/heads.svg");
+              background-image: url("../../assets/images/heads.svg");
               background-size: cover;
               background-repeat: no-repeat;
               margin-left: -3px;
             }
             .Tails {
-              background-image: url("../../../assets/images/tails.svg");
+              background-image: url("../../assets/images/tails.svg");
               background-size: cover;
               background-repeat: no-repeat;
             }
