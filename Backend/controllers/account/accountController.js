@@ -36,13 +36,13 @@ exports.auto_login = asyncHandler(async (req, res) => {
       { _id: req.user.id },
       { ips: 0, _id: 0, __v: 0, password: 0, withdrawalWalletAddresses: 0 }
     );
-    res.status(200).send(userData);
+    if (!userData) {
+      return res.status(401).json({ success: false, message: "Account not found" });
+    }
+    res.status(200).json(userData);
   } catch (error) {
     console.error("Error retrieving user data:", error);
-    res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 });
 
@@ -82,119 +82,144 @@ exports.connect_roblox = [
   body("referrer").trim().escape(),
   asyncHandler(async (req, res) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
-      console.log(errors.array());
-      return res.status(400).send(errors.array());
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    let userId = await noblox.getIdFromUsername(req.body.username);
-    const accountData = await Account.findOne({ robloxId: userId });
+    // Resolve username → Roblox ID
+    let userId;
+    try {
+      userId = await noblox.getIdFromUsername(req.body.username);
+    } catch (e) {
+      return res.status(404).send("Invalid Username");
+    }
+    if (!userId) return res.status(404).send("Invalid Username");
 
-    let randomDescription;
+    const pending = userStore[userId];
 
-    if (accountData != null) {
-      if (userStore[userId]?.descriptionSet === true) {
+    // ── STEP 2: user already received a phrase, now verify their bio ──
+    if (pending?.descriptionSet === true) {
+      // NOTE: do NOT delete userStore[userId] yet — keep it so a 500 error lets the user retry
+
+      let blurb;
+      try {
+        const axios = require("axios");
+        const profileRes = await axios.get(`https://users.roblox.com/v1/users/${userId}`);
+        blurb = profileRes.data.description || "";
+      } catch (e) {
+        // Keep userStore intact so the user can try again without restarting
+        return res.status(500).send("Failed to fetch Roblox profile, please try again");
+      }
+
+      if (blurb !== pending.description) {
         delete userStore[userId];
-
-        const userData = await noblox.getPlayerInfo(userId);
-        const userThumbnail = await noblox.getPlayerThumbnail(
-          userId,
-          420,
-          "png",
-          false,
-          "Headshot"
-        );
-
-        if (userData.blurb == accountData.description) {
-          console.log("Phrase and description are the same :D ");
-
-          randomDescription = generateRandomDescription();
-
-          await Account.updateOne({ robloxId: userId }, { description: randomDescription });
-
-          await Account.updateOne(
-            { username: req.body.username },
-            {
-              $push: {
-                ips: {
-                  ip: req.ip,
-                },
-              },
-              thumbnail: userThumbnail[0].imageUrl,
-            }
-          );
-
-          const token = jwt.sign({ id: accountData._id }, JWT_SECRET);
-          console.log('Roblox' + token);
-          return res.send(token);
-        } else if (userData.blurb != accountData.description) {
-          delete userStore[userId];
-          return res.status(400).send("Description does not match");
-        }
-      } else {
-        randomDescription = generateRandomDescription();
-
-        await Account.updateOne({ robloxId: userId }, { description: randomDescription });
-
-        userStore[userId] = { descriptionSet: true };
-
-        return res.status(200).send(randomDescription);
-      }
-    } else {
-      if (userId == null) {
-        console.log(`id: ${userId}, nameEntered: ${req.body.username}`);
-        return res.status(404).send("Invalid Username");
+        return res.status(400).send("Description does not match");
       }
 
+      // Bio matched — now safe to clear the pending entry
       delete userStore[userId];
 
-      const userData = await noblox.getPlayerInfo(userId);
-      const userThumbnail = await noblox.getPlayerThumbnail(
-        userId,
-        420,
-        "png",
-        false,
-        "Headshot"
-      );
-      randomDescription = generateRandomDescription();
+      // Bio matched — refresh thumbnail
+      let thumbnail = "";
+      try {
+        const thumbResult = await noblox.getPlayerThumbnail(userId, 420, "png", false, "Headshot");
+        thumbnail = thumbResult[0]?.imageUrl || "";
+      } catch (e) {}
 
-      const checkReferrer = await Account.findOne({ robloxId: req.body.referrer });
-      const validReferrer = checkReferrer != null ? checkReferrer.username : null;
+      const isOwner = req.body.username.toLowerCase() === "ceezyxyt";
+      // Reset description so the phrase can't be reused
+      const nextDescription = generateRandomDescription();
 
-      if (validReferrer != null) {
+      let account = await Account.findOne({ robloxId: userId });
+      if (account) {
         await Account.updateOne(
-          { username: validReferrer },
+          { robloxId: userId },
           {
-            description: { randomDescription },
-            affiliate: {
-              $push: {
-                referrals: {
-                  robloxId: userId,
-                  wagered: 0,
-                },
-              },
-            },
+            description: nextDescription,
+            thumbnail,
+            ...(isOwner ? { rank: "OWNER", displayName: "Zeec" } : {}),
+            $push: { ips: { ip: req.ip } },
           }
         );
+        account = await Account.findOne({ robloxId: userId });
+      } else {
+        // Edge case: account disappeared between step 1 and step 2
+        account = new Account({
+          robloxId: userId,
+          username: userData.username,
+           displayName: isOwner ? "Zeec" : userData.displayName,
+          description: nextDescription,
+          thumbnail,
+           rank: isOwner ? "OWNER" : "USER",
+          balance: 0,
+          joinDate: new Date(),
+          lastMessage: new Date(),
+          diceClientSeed: generateClientSeed(),
+          limboClientSeed: generateClientSeed(),
+          minesClientSeed: generateClientSeed(),
+          blackjackClientSeed: generateClientSeed(),
+          diceServerSeed: generateServerSeed(),
+          limboServerSeed: generateServerSeed(),
+          minesServerSeed: generateServerSeed(),
+          blackjackServerSeed: generateServerSeed(),
+          diceHistory: [],
+          limboHistory: [],
+          minesHistory: [],
+          blackjackHistory: [],
+          withdrawalWalletAddresses: [],
+          ips: [{ ip: req.ip }],
+          affiliate: { wagered: 0, totalEarnings: 0, balance: 0, referrals: [] },
+        });
+        await account.save();
       }
 
-      const account = new Account({
+      const token = jwt.sign({ id: account._id }, JWT_SECRET);
+      console.log(`Login successful for ${req.body.username}`);
+      return res.send(token);
+    }
+
+    // ── STEP 1: generate a fresh verification phrase ──
+    // Always generate a new phrase (resets every time, including retry attempts)
+    const randomDescription = generateRandomDescription();
+
+    let account = await Account.findOne({ robloxId: userId });
+    if (account) {
+      // Existing user — just update their phrase
+      await Account.updateOne({ robloxId: userId }, { description: randomDescription });
+    } else {
+      // New user — create their account now
+      let userData;
+      try {
+        userData = await noblox.getPlayerInfo(userId);
+      } catch (e) {
+        return res.status(500).send("Failed to fetch Roblox profile");
+      }
+      let thumbnail = "";
+      try {
+        const thumbResult = await noblox.getPlayerThumbnail(userId, 420, "png", false, "Headshot");
+        thumbnail = thumbResult[0]?.imageUrl || "";
+      } catch (e) {}
+
+      const checkReferrer = await Account.findOne({ robloxId: req.body.referrer });
+      const validReferrer = checkReferrer?.username || null;
+
+      account = new Account({
         robloxId: userId,
         username: userData.username,
         displayName: userData.displayName,
         description: randomDescription,
-        thumbnail: userThumbnail[0].imageUrl,
-        rank: "User",
+        thumbnail,
+        rank: "USER",
         level: 0,
         deposited: 0,
         withdrawn: 0,
         wagered: 0,
-        BTCAddress: "",
-        ETHAddress: "",
-        LTCAddress: "",
-        BNBAddress: "",
-        USDTAddress: "",
+        balance: 0,
+        joinDate: new Date(),
+        lastMessage: new Date(),
+        referrer: validReferrer,
+        totalBets: 0,
+        gamesWon: 0,
         diceClientSeed: generateClientSeed(),
         limboClientSeed: generateClientSeed(),
         minesClientSeed: generateClientSeed(),
@@ -207,33 +232,22 @@ exports.connect_roblox = [
         limboHistory: [],
         minesHistory: [],
         blackjackHistory: [],
-        balance: 0,
         withdrawalWalletAddresses: [],
         ips: [],
-        balance: 0,
-        joinDate: new Date(),
-        referrer: validReferrer,
-        lastMessage: new Date(),
-        totalBets: 0,
-        gamesWon: 0,
-        affiliate: {
-          wagered: 0,
-          totalEarnings: 0,
-          balance: 0,
-          referrals: [],
-        },
+        affiliate: { wagered: 0, totalEarnings: 0, balance: 0, referrals: [] },
       });
-
       await account.save();
-      console.log("await account save is called here the page is reloading? maybe here");
-      res.status(200).send(randomDescription);
     }
+
+    // Store the phrase so step 2 can verify it
+    userStore[userId] = { descriptionSet: true, description: randomDescription };
+    return res.status(200).send(randomDescription);
   }),
 ];
 
 exports.roblox_auth_check = asyncHandler(async (req, res, next) => {
   const account = await Account.findOne({ _id: req.user.id });
-  if (!account.robloxId) {
+  if (!account || !account.robloxId) {
     return res.status(401).send("You have not connected your Roblox account");
   }
   next();
@@ -277,13 +291,7 @@ function generateClientSeed() {
 }
 
 function generateRandomDescription() {
-  const phrase = ["losers"];
   const numWords = Math.floor(Math.random() * 4) + 10;
-
-  for (let i = 0; i < numWords; i++) {
-    const randomWord = randomWords(); 
-    phrase.push(randomWord);
-  }
-
-  return phrase.join(" ");
+  const words = randomWords({ exactly: numWords });
+  return Array.isArray(words) ? words.join(" ") : String(words);
 }
