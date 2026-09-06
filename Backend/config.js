@@ -7,6 +7,7 @@ const HCAPTCHA_SECRET =
 const MONGODB_URI = 'mongodb+srv://addddd:addddd@cluster0.sc5dux9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const TRANSACTION_SECRET = process.env.TRANSACTION_SECRET || "secret";
 const XP_CONSTANT = process.env.XP_CONSTANT || 0.04;
+const GAME_TAX_RATE = 0.2;
 
 module.exports = {
   JWT_SECRET,
@@ -15,4 +16,5 @@ module.exports = {
   MONGODB_URI,
   TRANSACTION_SECRET,
   XP_CONSTANT,
+  GAME_TAX_RATE,
 };
