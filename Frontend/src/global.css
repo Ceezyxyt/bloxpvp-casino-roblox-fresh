@@ -20,32 +20,211 @@ body {
 }
 
 .LoadingScreen {
+  position: fixed;
+  inset: 0;
   width: 100%;
   height: 100%;
-  background-color: #19172c;
-  z-index: 22;
+  z-index: 220;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(181, 43, 61, 0.24), transparent 25%),
+    linear-gradient(145deg, #17080d, #050304 72%);
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-
-  img {
-    animation: infinite loadingOpacity 3s;
-    content: url("./assets/images/longLogo.svg");
-    width: 200px;
-    height: auto;
-  }
+  gap: 1rem;
 }
 
-@keyframes loadingOpacity {
-  0% {
-    opacity: 100%;
-  }
+.LoadingScreen img {
+  position: relative;
+  z-index: 1;
+  width: min(270px, 62vw);
+  height: auto;
+  animation: loadingLogo 1.8s ease-in-out infinite;
+  filter: drop-shadow(0 0 28px rgba(211, 49, 72, 0.28));
+}
 
-  50% {
-    opacity: 0%;
-  }
+.LoadingScreen p {
+  position: relative;
+  z-index: 1;
+  color: #d7a0a7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  animation: loadingText 1.8s ease-in-out infinite;
+}
 
-  100% {
-    opacity: 100%;
+.LoadingGlow {
+  position: absolute;
+  width: min(440px, 90vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(211, 49, 72, 0.24);
+  border-radius: 50%;
+  box-shadow: 0 0 60px rgba(181, 43, 61, 0.14), inset 0 0 60px rgba(181, 43, 61, 0.1);
+  animation: loadingRing 2.6s ease-in-out infinite;
+}
+
+@keyframes loadingLogo {
+  0%, 100% { opacity: 0.72; transform: scale(0.96); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes loadingText {
+  0%, 100% { opacity: 0.42; }
+  50% { opacity: 1; }
+}
+
+@keyframes loadingRing {
+  0%, 100% { opacity: 0.4; transform: scale(0.88); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+/* BloxSurge brand layer: keep every game surface on the same dark-red palette. */
+:root {
+  --surge-red: #b52b3d;
+  --surge-red-bright: #d33148;
+  --surge-red-dark: #8f1d2c;
+  --surge-ink: #0f080a;
+  --surge-panel: #160b0e;
+  --surge-border: #3a151d;
+}
+
+body {
+  background: var(--surge-ink);
+}
+
+:where(.Coinflip, .JackpotPage, .MarketplacePage, .Home, .AuthPage) {
+  background-color: var(--surge-ink) !important;
+  background-image: radial-gradient(circle at 50% -20%, #4a111d 0%, transparent 48%),
+    linear-gradient(180deg, #160b0e 0%, #0f080a 100%) !important;
+  border-color: var(--surge-border) !important;
+}
+
+:where(.Navbar, .InfoLinks, .Overview, .Stat, .JoiningModal, .JackpotModal,
+  .ViewingModal, .Coinflip .FilterOptions, .Coinflip .FilterOption,
+  .JackpotPage > .Container, .JackpotPage .Info, .Entry) {
+  background: linear-gradient(180deg, #160b0e 0%, #2b1017 100%) !important;
+  border-color: var(--surge-border) !important;
+}
+
+:where(.MobileSidebar, .MobileChat, .Sidebar, .Footer) {
+  background: var(--surge-panel) !important;
+  border-color: var(--surge-border) !important;
+}
+
+:where(.GameInteractivity button, .GameFilter, .Overview .Interact button,
+  .JoiningModal .Creation button, .JackpotModal .Creation button,
+  .JackpotPage .Bet, .Login, .Deposit, .SetBtn, .AdminTab.active) {
+  background: linear-gradient(135deg, var(--surge-red-bright), var(--surge-red-dark)) !important;
+  border-color: var(--surge-red) !important;
+  box-shadow: 0 0 24px #b52b3d33 !important;
+}
+
+:where(.GameLink.Active p, .GameLink.Active, .InfoLinks .Purple p,
+  .Coinflip .FilterOption p, .Coinflip .Stat .Amount, .Overview p.Value,
+  .JoiningModal .SelectionStats .TotalValue span,
+  .JackpotModal .SelectionStats .TotalValue span,
+  .JackpotPage .WheelInfo .Value, .JackpotPage .BetInfo .Bet span,
+  .ProfileInfo .Level) {
+  color: var(--surge-red-bright) !important;
+  text-shadow: 0 0 16px #b52b3d66 !important;
+}
+
+:where(.GameLinks .Active::before, .CoinflipJoining .loading,
+  .CoinflipCreation .loading, .JackpotJoining .loading,
+  .CoinflipView .loading) {
+  border-top-color: var(--surge-red) !important;
+}
+
+:where(.MobileNav, .Sidebar, .MobileSidebar, .Chat, .MobileChat,
+  .CoinflipCreation, .CoinflipJoining, .JackpotJoining, .MarketplacePage,
+  .MarketplaceList, .Cart, .CryptoDepositModal, .CryptoWithdrawalModal,
+  .MM2DepositModal, .LoginModal, .ViewingModal, .CreationModal,
+  .JackpotModal) {
+  background-color: var(--surge-panel) !important;
+  border-color: var(--surge-border) !important;
+}
+
+:where(.MobileNav .Tab p, .Sidebar .Discord p, .MobileSidebar .Discord p,
+  .Sidebar .Support p, .MobileSidebar .Support p, .Purple,
+  .Purple p, .Purple span, .Chatbox.Owner h1) {
+  color: var(--surge-red-bright) !important;
+}
+
+:where(button, input[type="submit"], input[type="button"],
+  .CreationModal button, .JackpotModal button,
+  .MarketplacePage button, .Cart button, .CryptoDepositModal button,
+  .CryptoWithdrawalModal button, .MM2DepositModal button) {
+  background: linear-gradient(135deg, var(--surge-red-bright), var(--surge-red-dark)) !important;
+  border-color: var(--surge-red) !important;
+  color: #fff !important;
+}
+
+:where(.MobileNav .Tab) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: inherit !important;
+}
+
+:where(.MobileNav .Tab:hover) {
+  background: rgba(211, 49, 72, 0.08) !important;
+}
+
+:where(.MobileNav .Tab:active) {
+  transform: translateY(1px);
+}
+
+:where(.MobileNav .Tab img) {
+  pointer-events: none;
+}
+
+:where(.Chat .Rules, .Chat .Chatdetails, .MobileChat .Rules,
+  .MobileChat .Chatdetails, .Chat .SendMessage form > div,
+  .MobileChat .SendMessage form > div, .CreationModal .Search,
+  .JackpotModal .Search, .MarketplacePage .Search) {
+  background: linear-gradient(180deg, #1d0d12 0%, #321019 100%) !important;
+  border-color: var(--surge-border) !important;
+}
+
+:where(.Chat ::-webkit-scrollbar-thumb, .MobileChat ::-webkit-scrollbar-thumb) {
+  background: var(--surge-red) !important;
+}
+
+:where(.MarketplacePage .Purple, .MarketplacePage .ListItems,
+  .MarketplacePage .Cart, .MarketplacePage .LineGradient,
+  .MarketplacePage .Separation, .MarketplacePage .OtherListing,
+  .MarketplacePage .MyListing) {
+  background: linear-gradient(135deg, #d33148, #8f1d2c) !important;
+  border-color: var(--surge-red) !important;
+  color: #fff !important;
+}
+
+:where(.MarketplacePage .HeadingText h2, .MarketplacePage .Purple p,
+  .MarketplacePage .Price, .MarketplacePage .Rate) {
+  color: var(--surge-red-bright) !important;
+}
+
+:where(.MarketplacePage .HeadingText img, .MarketplacePage .Purple img) {
+  filter: brightness(0) saturate(100%) invert(24%) sepia(52%) saturate(2000%)
+    hue-rotate(320deg) brightness(92%) contrast(100%) !important;
+}
+
+:where(.JackpotPage .WheelBG) {
+  background-image: radial-gradient(circle, #3a111b 0%, #160b0e 68%, #0f080a 100%) !important;
+}
+
+:where(.JackpotPage .Wheel) {
+  outline-color: #b52b3d66 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
