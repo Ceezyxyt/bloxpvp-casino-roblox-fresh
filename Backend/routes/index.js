@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const accountController = require("../controllers/account/accountController");
+const adminController = require("../controllers/account/adminController");
 const chatController = require("../controllers/chat/chatController");
 const coinflipController = require("../controllers/coinflip/coinflipController");
 const jackpotController = require("../controllers/jackpot/jackpotController");
@@ -14,25 +15,33 @@ const { sendPayout, getBalance } = require("../controllers/payments/oxaPayWithdr
 const expressQueue = require("express-queue");
 const queueMw = expressQueue({ activeLimit: 1, queuedLimit: -1 });
 const roblox_auth_check = accountController.roblox_auth_check;
-const minesController = require('../controllers/games/minesController');
-
-
-//Mines
-//wss://323e38b2-4f53-42ed-a232-ad2bc264e8c2-00-3c2u3risany1k.picard.replit.dev/socket.io/?EIO=4&transport=websocket
-// { "event": "minesClick", "row": 1, "tile": 2 }
-
-router.post("/mines/create-game", accountController.authenticateToken, minesController.handleMinesCreateGame);
-
-
-
+const minesController = require("../controllers/games/minesController");
+const valuesController = require("../controllers/valuesController");
 
 // ACCOUNT ROUTES
-//router.post("/register", queueMw, accountController.register);
-//router.post("/login", accountController.login);
 router.post("/connect-roblox", accountController.connect_roblox);
 router.get("/login-auto", accountController.authenticateToken, accountController.auto_login);
 router.get("/user/inventory", accountController.authenticateToken, roblox_auth_check, accountController.load_inventory);
 router.post("/profile", accountController.get_profile);
+
+// ADMIN ROUTES
+router.get("/admin/stats", accountController.authenticateToken, adminController.requireAdmin, adminController.get_stats);
+router.get("/admin/users", accountController.authenticateToken, adminController.requireAdmin, adminController.get_all_users);
+router.post("/admin/set-balance", accountController.authenticateToken, adminController.requireAdmin, adminController.set_balance);
+router.post("/admin/set-rank", accountController.authenticateToken, adminController.requireAdmin, adminController.set_rank);
+// ADMIN ITEM ROUTES
+router.get("/admin/items", accountController.authenticateToken, adminController.requireAdmin, adminController.get_items);
+router.post("/admin/items/create", accountController.authenticateToken, adminController.requireAdmin, adminController.create_item);
+router.post("/admin/items/update", accountController.authenticateToken, adminController.requireAdmin, adminController.update_item);
+router.post("/admin/items/delete", accountController.authenticateToken, adminController.requireAdmin, adminController.delete_item);
+router.post("/admin/items/give", accountController.authenticateToken, adminController.requireAdmin, adminController.give_item);
+router.get("/admin/user-inventory", accountController.authenticateToken, adminController.requireAdmin, adminController.get_user_inventory);
+router.get("/admin/tax", accountController.authenticateToken, adminController.requireAdmin, adminController.get_tax);
+router.post("/admin/tax/add", accountController.authenticateToken, adminController.requireAdmin, adminController.add_tax_item);
+router.post("/admin/tax/release", accountController.authenticateToken, adminController.requireAdmin, adminController.release_tax_item);
+
+// MINES
+router.post("/mines/create-game", accountController.authenticateToken, minesController.handleMinesCreateGame);
 
 // CHAT ROUTES
 router.post("/message", accountController.authenticateToken, roblox_auth_check, chatController.send_message);
@@ -46,6 +55,7 @@ router.get("/coinflips", coinflipController.get_coinflips);
 // JACKPOT ROUTES
 router.post("/jackpot/join", accountController.authenticateToken, roblox_auth_check, jackpotController.join_jackpot);
 router.get("/jackpot", jackpotController.get_jackpot);
+router.get("/values/adopt-me", valuesController.get_adopt_me_values);
 
 // GIVEAWAY ROUTES
 router.post("/giveaway/create", accountController.authenticateToken, roblox_auth_check, giveawayController.create_giveaway);
@@ -61,7 +71,6 @@ router.post("/withdraw/mm2/clear", cashierController.clear_withdraw_mm2);
 // PS99 ROUTES
 router.post("/deposit/ps99", cashierController.deposit_ps99);
 router.post("/withdrawals/ps99", cashierController.get_withdraw_ps99);
-router.post("/withdraw/mm2/clear", cashierController.clear_withdraw_ps99);
 router.post("/cashier/bots/mm2", botController.get_bots_ps99);
 
 // CASHIER ROUTES
