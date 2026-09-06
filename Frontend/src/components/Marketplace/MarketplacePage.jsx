@@ -313,7 +313,7 @@ export default function MarketplacePage() {
                   value={rangeSlider}
                   onChange={(e) => setRangeSlider(e.target.value)}
                   style={{
-                    background: `linear-gradient(to right, #863AFF ${rangeSlider}%, #19172C ${rangeSlider}%)`,
+                    background: `linear-gradient(to right, #d33148 ${rangeSlider}%, #160b0e ${rangeSlider}%)`,
                     borderRadius: "10px",
                   }}
                   id="myRange"
@@ -323,7 +323,7 @@ export default function MarketplacePage() {
             <div className="Category">
               <p>Category:</p>
               <div className="Categories">
-                <div className="MM2 Purple">
+                 <div className="MM2 Purple">
                   <p>MM2</p>
                 </div>
                 <div className="PS99 Purple">
@@ -338,10 +338,10 @@ export default function MarketplacePage() {
           <div className="Info">
             <div className="Copyright">
               <h3>
-                © {new Date().getFullYear()} BLOXPVP.COM All Rights Reserved
+                © {new Date().getFullYear()} BloxSurge.COM All Rights Reserved
               </h3>
               <p className="SubText">
-                BLOXPVP.COM is not affiliated, associated, or partnered with
+                BloxSurge.COM is not affiliated, associated, or partnered with
                 Roblox Corporation in any way. We are not authorized, endorsed,
                 or sponsored by Roblox Corporation.
               </p>
@@ -692,7 +692,7 @@ function MyListing({ Information }) {
                 );
               }}
               style={{
-                background: `linear-gradient(to right, #863AFF ${progress}%, #19172C ${progress}%)`,
+                    background: `linear-gradient(to right, #d33148 ${progress}%, #160b0e ${progress}%)`,
                 borderRadius: "10px",
               }}
               id="myRange"
