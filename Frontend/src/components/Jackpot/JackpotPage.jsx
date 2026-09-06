@@ -56,12 +56,12 @@ export default function JackpotPage() {
   };
 
   const COLORS = [
-    "#9E3EFF",
+    "#b52b3d",
     "#3EFF68",
-    "#FF3E3E",
+    "#8f1d2c",
     "#FF833E",
     "#3E74FF",
-    "#e83eff",
+    "#d33148",
   ];
   const RADIAN = Math.PI / 180;
   const renderCustomizedLabel = ({
@@ -99,7 +99,13 @@ export default function JackpotPage() {
       );
     }
   };
-  const rotationPercentCalc = jackpotData.result / jackpotData.value;
+  const hasResult =
+    jackpotData.result !== null &&
+    jackpotData.result !== undefined &&
+    Number(jackpotData.value) > 0;
+  const rotationPercentCalc = hasResult
+    ? Number(jackpotData.result) / Number(jackpotData.value)
+    : 0;
   const rotationDEGCalc = rotationPercentCalc * 360 + 3600;
 
   useEffect(() => {
@@ -141,11 +147,11 @@ export default function JackpotPage() {
               </div>
             </div>
             <div
-              className={`Wheel ${jackpotData.result ? "Spin" : ""}`}
+              className={`Wheel ${hasResult ? "Spin" : ""}`}
               style={
-                jackpotData.result && {
-                  transform: `rotate(${rotationDEGCalc}deg)`,
-                }
+                hasResult
+                  ? { transform: `rotate(${rotationDEGCalc}deg)` }
+                  : undefined
               }
             >
               <ResponsiveContainer
@@ -177,11 +183,9 @@ export default function JackpotPage() {
               </ResponsiveContainer>
             </div>
             <div
-              className={`WheelMask ${jackpotData.result ? "Spin" : ""}`}
+              className={`WheelMask ${hasResult ? "Spin" : ""}`}
               style={{
-                transform: `${
-                  jackpotData.result ? `rotate(${rotationDEGCalc}deg)` : "none"
-                }`,
+                transform: hasResult ? `rotate(${rotationDEGCalc}deg)` : "none",
               }}
             >
               <ResponsiveContainer width="100%" height="100%">
